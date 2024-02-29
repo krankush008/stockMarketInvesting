@@ -1,8 +1,7 @@
 import React, { useEffect, useState  , useReducer} from 'react'
 import axios from 'axios'
 import { initialState ,  reducer } from './BondFilterUpdated';
-const Alerts = ({ allBonds, selectedBonds, dispatch }) => {
-    const [yourBonds, setYourBonds] = useState([]);
+const Alerts = ({ allBonds, selectedBonds, dispatch , yourBonds }) => {
     const handleCheckboxChange = (bond) => {
         if (selectedBonds.has(bond.isin)) {
           const updatedSelectedBonds = new Map(selectedBonds);
@@ -30,56 +29,6 @@ const Alerts = ({ allBonds, selectedBonds, dispatch }) => {
       });
     }
   };
-    useEffect(() => {
-        const fetchYourBonds = async () => {
-            try {
-                const response = await axios.get(`http://localhost:8080/api/getAlertsByUserId/${124}`);
-                const responseBonds = response.data.map(bond => ({
-                    isin: bond.bondId,
-                    xirr: bond.xirr
-                }));
-                console.log('responseBonds:', responseBonds);
-                const yourBonds = allBonds.filter(bond => {
-                    return responseBonds.some(responseBond => responseBond.isin === bond.isin);
-                }).map(filteredBond => ({
-                    ...filteredBond,
-                    xirr: responseBonds.find(responseBond => responseBond.isin === filteredBond.isin).xirr
-                }));
-                console.log('yourBonds:', yourBonds)
-                const selectedBonds = yourBonds.map(bond => {
-                    return {
-                        "bond": {
-                            "isin": bond.isin,
-                            "creditScore": bond.creditScore,
-                            "maturityDate": bond.maturityDate
-                        },
-                        "threshold": bond.xirr
-                    }
-
-                
-                }
-                );
-            
-                const selectedBondsMap = new Map();
-                selectedBonds.forEach(bond => {
-                    selectedBondsMap.set(bond.bond.isin, bond);
-                });
-
-
-                dispatch({ type: 'SET_SELECTED_BONDS', payload: selectedBondsMap});
-                setYourBonds(selectedBonds);
-                console.log('selectedBonds:', selectedBonds);
-            } catch (error) {
-                console.error('Error fetching all bonds data:', error);
-            }
-        }
-        fetchYourBonds();
-    }, [allBonds]);
-
-
-
-
-    
     return (
         <ul className="filtered-bonds-list">
             {

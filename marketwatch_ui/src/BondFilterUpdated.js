@@ -35,6 +35,7 @@ const BondFilterUpdated = () => {
   const { allBonds, filters, maxMonthsRange, selectedBonds } = state;
 
   const [showAlert , setShowAlert] = useState(false);
+  const [yourBonds, setYourBonds] = useState([]);
 
   useEffect(() => {
     const fetchAllBonds = async () => {
@@ -49,6 +50,49 @@ const BondFilterUpdated = () => {
         console.error('Error fetching all bonds data:', error);
       }
     };
+    const fetchYourBonds = async () => {
+      try {
+          const response = await axios.get(`http://localhost:8080/api/getAlertsByUserId/${124}`);
+          const responseBonds = response.data.map(bond => ({
+              isin: bond.bondId,
+              xirr: bond.xirr
+          }));
+          console.log('responseBonds:', responseBonds);
+          const yourBonds = allBonds.filter(bond => {
+              return responseBonds.some(responseBond => responseBond.isin === bond.isin);
+          }).map(filteredBond => ({
+              ...filteredBond,
+              xirr: responseBonds.find(responseBond => responseBond.isin === filteredBond.isin).xirr
+          }));
+          console.log('yourBonds:', yourBonds)
+          const selectedBonds = yourBonds.map(bond => {
+              return {
+                  "bond": {
+                      "isin": bond.isin,
+                      "creditScore": bond.creditScore,
+                      "maturityDate": bond.maturityDate
+                  },
+                  "threshold": bond.xirr
+              }
+
+          
+          }
+          );
+      
+          const selectedBondsMap = new Map();
+          selectedBonds.forEach(bond => {
+              selectedBondsMap.set(bond.bond.isin, bond);
+          });
+
+
+          dispatch({ type: 'SET_SELECTED_BONDS', payload: selectedBondsMap});
+          setYourBonds(selectedBonds);
+          console.log('selectedBonds:', selectedBonds);
+      } catch (error) {
+          console.error('Error fetching all bonds data:', error);
+      }
+  }
+  fetchYourBonds();
 
     fetchAllBonds();
   }, []);
@@ -160,7 +204,7 @@ const BondFilterUpdated = () => {
         <>
         <h2> Saved Alerts</h2>
       <Alerts
-  
+      yourBonds={yourBonds}
     allBonds={allBonds}
     selectedBonds={selectedBonds}
     dispatch={dispatch} 
