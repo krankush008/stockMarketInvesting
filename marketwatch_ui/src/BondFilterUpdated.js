@@ -33,9 +33,8 @@ export const reducer = (state, action) => {
 const BondFilterUpdated = () => {
   const [state, dispatch] = useReducer(reducer, initialState);
   const { allBonds, filters, maxMonthsRange, selectedBonds } = state;
-
-  const [showAlert , setShowAlert] = useState(false);
   const [yourBonds, setYourBonds] = useState([]);
+
 
   useEffect(() => {
     const fetchAllBonds = async () => {
@@ -190,26 +189,14 @@ const BondFilterUpdated = () => {
     <div className="bond-filter-container">
       <h2 className="page-title">Bond Filters</h2>
 
-     
-      
-      {/* show alert button */}
-      <button
-       className='show-alert-btn'
-       onClick={
-        () => setShowAlert(!showAlert)}>
-        {showAlert ? 'Hide Alerts' : 'Show saved Alerts'}
-      </button>
-      {showAlert && 
-      (
-        <>
-        <h2> Saved Alerts</h2>
+      {/*  alredy bonds in db  */}
+      <h3 className="filtered-bonds-title">Bonds:</h3>
       <Alerts
       yourBonds={yourBonds}
     allBonds={allBonds}
     selectedBonds={selectedBonds}
     dispatch={dispatch} 
   />
-  </>)}
   
       <button className="add-filter-btn" onClick={handleAddFilter}>Add Filter</button>
       {filters.map((filter, index) => (
